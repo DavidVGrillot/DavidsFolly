@@ -79,7 +79,7 @@ void bg_solver() {
     u[0] = 0;
 
 /* Basic loop dee--loop */
-    while (fabs(sumdelu) > .01) {
+    while (fabs(sumdelu) > 0.01) {
         sumdelu = 0;
         for (i = 0; i < nmax; i++) {
 

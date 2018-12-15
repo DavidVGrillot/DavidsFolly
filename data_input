@@ -1,14 +1,12 @@
 VALUE,DATA NAME,DATA TYPE,DESCRIPTION (all are GLO
 bg,a_type,char*2,"Type of analysis (bg or ei)"
 deut,b_type,char*4,"Baryon type"
-2,I_pot,integer,"potential type 1 square well,2 Yukawa,3 HJ, 4 Harmonic oscill; "
+1,I_pot,integer,"potential type 1 square well,2 Yukawa,3 HJ, 4 Harmonic oscill; "
 0,n,integer,"principle quantum number"
 0,l,integer,"angular momentum quantum number"
 0,sp,integer,"spin quantum number"
 0,tau,integer,"isospin quantum number"
 14.5,eng,"long double ","energy parameter to vary"
-
-
 
 
 

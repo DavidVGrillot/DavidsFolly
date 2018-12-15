@@ -58,16 +58,15 @@ double get_pot(int i) {
 /* square well */
     if (i_pot == 1) {
         if(i == 0){
-//            v = -35*eng/2.0;
-            v = -35.;
+            v = -35.+x*x;
             return v;
         }
         if (x < 2.1) {
-            v = -35.0;
+            v = -35.0+x*x;
 //            v = -35*eng/2.0;        /* flat well of -34 MEV */
 //            if(i != 0) v = v- l*(l+1.)/(x*x) - x*x;
         } else {
-            v = 0.0;
+            v = 0.0+x*x;
         }
         return v;
     }
@@ -78,7 +77,7 @@ double get_pot(int i) {
             return v;
         }
         power = -x/mpi;
-        v = -30*pow(2.718, power)/x;
+        v = -30*pow(2.718, power)/x + x*x;
         return v;
     }
     //  Harmonic oscillator

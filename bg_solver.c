@@ -48,7 +48,6 @@ void bg_solver() {
     double coef;         /*used in Pauli */
     int i;
     int j;
-    double dellam;  /* change in the eigenvalue at end of each iteration */
     double lam;         /* eigen value */
     double integrand[nmesh];
     double ru;
@@ -70,13 +69,16 @@ void bg_solver() {
     a[0] = 1. + (mesh * mesh / 12.) * (lam - pot[1]);
     b[0] = -2. + (5.0 / 6.0) * mesh * mesh * (lam - pot[0]);
     c[0] = 1. - (mesh * mesh / 12.) *lam;
-    d1[0] = b[0];
+    d1[0] = b[0]+ 5.0;
     e0 = (n + 3.0 / 2.0) *2* lam;
     d3[0] = -(mesh * mesh / 12.) * (lam - e0) * r[1];
     q[0] = a[0] * r[1] + d3[0];
     f[0] = -(q[0] + d3[0]) / a[0];
     h[0] = -a[0] / b[0];
     u[0] = 0;
+//    f[0]=0.0;
+//    h[0]=0.0;
+
 
 /* Basic loop dee--loop */
     while (fabs(sumdelu) > 0.01) {
@@ -88,12 +90,12 @@ void bg_solver() {
             integrand1[i] = r[i] * u[i];
             pot[i] = get_pot(i);              /* output is in v[] v[rho] = <Y[jlst]| v[hamada] | Y[jlst]> */
             integrand[i] = r[i] * pot[i] * u[i];
-            lamda[i] = (lam - e0)*r[i]*ru + 12.0*coef*(r[i] * rvu);
         }
         get_integral(integrand);
         rvu = tmat;
         get_integral(integrand1);
         ru = tmat;
+        for (i = 0; i < nmax; i++) {lamda[i] = (lam - e0)*r[i]*ru - 12.0*coef*(r[i] * rvu);}
         j = j + 1;
 
         for (i = 1; i < nmax; i++) {
@@ -101,13 +103,11 @@ void bg_solver() {
             b[i] = -2. + (5.0 / 6.0) * (mesh*mesh/12.) * (lam - pot[i]);
             c[i] = 1. + (mesh*mesh/12.) * (lam - pot[i - 1]);
             q[i] = (a[i] * u[i + 1] + b[i] * u[i] + c[i] * u[i - 1]);
-            d1[i] = b[i] + c[i] * h[i - 1];
-
-            pctd1[i] = (d1[i]-d1[i-1])/d1[i-1];
-//            if(fabs(pctd1[i]) > 0.1) d1[i] = d1[i-1];
-            out1[i] = u[i];
+            out1[i] = q[i];
             d3[i]=  -(mesh * mesh / 12.)*(lamda[i + 1] + 10.0 * lamda[i] + lamda[i - 1] + 12*r[i]*rvu);
             q[i] = q[i] + d3[i];
+
+            d1[i] = b[i] + c[i] * h[i - 1]+ 5.0;
             f[i] = -(q[i] + c[i] * f[i - 1]) / d1[i];
             h[i] = -a[i] / d1[i];
 
@@ -115,25 +115,28 @@ void bg_solver() {
             if (strcmp(a_type, "bg") == 0) {
                 if (i == 1) {
                     delu[i] = -q[0] / a[0];
+
                 } else if (i == 2) {
                       delu[2] = (delu[1] - f[1])/h[1];
-//                      delu[2] = -(q[1] + b[1]*delu[1])/a[1];
+//                    delu[2] = -(q[1] + b[1]*delu[1])/a[1];
                 } else {
-                      delu[i] = (delu[i - 1] - f[i - 1]) / h[i - 1];
+                     delu[i] = (delu[i - 1] - f[i - 1]) / h[i - 1];
 //                    delu[i] = -(q[i - 1] + b[i - 1] * delu[i - 1] + c[i - 1] * delu[i - 2]) / a[i];
+//                    delu[i] = -(q[i - 1] +  b[i - 1] * delu[i - 1])/a[i];
                 }
             }
-            delu[i] = delu[i] * f[i - 1] / (1 + k * h[i - 1]);
+            delu[i] = delu[i] * f[i - 1] / (1 - k * h[i - 1]);
             u[i] = u[i] + delu[i];
             sumdelu = sumdelu + delu[i];
         }
         printf("sumdelu = %g\n", sumdelu);
         fflush(stdout);
-        write_file(f, nmesh, io);
-        write_file(h, nmesh, io);
-        write_file(d1, nmesh, io);
 
-
+//        write_file(d1, nmesh, io);
+//        write_file(f, nmesh, io);
+//        write_file(h, nmesh, io);
+//       write_file(delu, nmesh, io);
+//        write_file(u, nmesh, io);
         for (i = 0; i < nmax; i++) {
             integrand1[i] = u[i] * u[i];              /* normalize u */
         }
@@ -142,21 +145,11 @@ void bg_solver() {
         for (i = 0; i < nmax; i++) {
             u[i] = u[i] / tmat;                       /* finish normalization */
         }
-        if (j > 1) {
+        if (j > 3) {
             printf("no convergence after tries = %d\n", j);
             fflush(stdout);
             sumdelu = 0.0;
-            dellam = 0.0;
         }
-
-        dellam = (f[nmax - 1]) / e[nmax - 1];
-//        dellam= (delu[nmax-1]+h[0]*delu[1]-f[nmax-1]-f[0])/(e[nmax-1]-e[0]);
-        if (strcmp(a_type, "bg") == 0) dellam = 0.0;
-        lam = lam + dellam;
-        printf("lam = %g\n", lam);
-        fflush(stdout);
-        printf("dellam = %g\n", dellam);
-        fflush(stdout);
     }
 
     for (i = 0; i < nmax; i++) {

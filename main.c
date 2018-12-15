@@ -16,6 +16,8 @@
 void main() {
 
     double c;
+//    nmesh = nmesh*4;
+//    mesh = mesh/4;
     nmax = nmesh - 1;
     u = (double *) calloc(nmesh, sizeof(double));    /*solu. wave fct*/
     r = (double *) calloc(nmesh, sizeof(double));    /*solu. wave fct*/
@@ -85,8 +87,8 @@ void main() {
 //    resultsArray[i] = r[i];
 
 //    write_file(resultsArray, c_results_size, io);
-//     write_file(r, nmesh, io);
-//     write_file(u, nmesh, io);
+     write_file(r, nmesh, io);
+     write_file(u, nmesh, io);
 
     fclose(io);
 
